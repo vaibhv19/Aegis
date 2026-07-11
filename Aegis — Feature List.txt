@@ -1,0 +1,11 @@
+Aegis — Feature List
+PROJECT NAME: Aegis (Enterprise Test Automation Framework & CI Pipeline)
+Stack: TypeScript + Playwright + GitHub Actions + Docker + Allure Reports
+Target: Trajectory
+Core Differentiator: Functional Test Automation
+
+Robust End-to-End UI Automation — modular suite using Page Object Model (POM), covering login flows, dynamic status-driven forms, resume upload/versioning flows, across multiple browser engines
+Programmatic API Verification Layer — REST API tests against Trajectory's Spring Boot endpoints: response schema validation, auth state checks, response time checks
+Continuous Pipeline Integration — GitHub Actions workflow running headless tests inside Docker, full regression suite triggered on every push
+Visual Regression Validation — pixel-matching snapshots of key pages/viewports to catch layout/rendering breaks that functional tests would miss
+Rich Analytics Reporting — Allure Reports compiling step-by-step failure logs, timelines, and auto-captured error screenshots
