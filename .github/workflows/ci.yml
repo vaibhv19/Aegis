@@ -1,0 +1,85 @@
+name: Aegis CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - '.gitignore'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - '.gitignore'
+  workflow_dispatch:
+    inputs:
+      update_snapshots:
+        description: 'Regenerate and commit visual snapshot baselines'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  ci:
+    name: Aegis Quality & Test Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run ESLint Checks
+        run: npm run lint
+
+      - name: Run Prettier Formatting Checks
+        run: npm run format:check
+
+      - name: Install Playwright Browsers & Dependencies
+        run: npx playwright install --with-deps
+
+      - name: Regenerate Visual Snapshot Baselines
+        if: ${{ github.event.inputs.update_snapshots == 'true' }}
+        run: npx playwright test tests/visual --update-snapshots --workers=1
+
+      - name: Commit Visual Snapshots
+        if: ${{ github.event.inputs.update_snapshots == 'true' }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'test: regenerate and commit Linux visual baseline snapshots'
+          file_pattern: 'tests/visual/**'
+
+      - name: Run Playwright Test Suite
+        if: ${{ github.event.inputs.update_snapshots != 'true' }}
+        run: npx playwright test --workers=1
+
+      - name: Upload Playwright HTML Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload Failure Test Results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 14
