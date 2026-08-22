@@ -5,6 +5,7 @@ dotenv.config();
 
 export interface Config {
   baseUrl: string;
+  apiBaseUrl: string;
   envName: string;
   testUserEmail?: string;
   testUserPassword?: string;
@@ -12,6 +13,7 @@ export interface Config {
 
 export const config: Config = {
   baseUrl: process.env.BASE_URL || 'https://trajectory-mu-six.vercel.app',
+  apiBaseUrl: process.env.API_BASE_URL || 'https://trajectory-api.duckdns.org',
   envName: process.env.NODE_ENV || 'development',
   testUserEmail: process.env.TEST_USER_EMAIL,
   testUserPassword: process.env.TEST_USER_PASSWORD,
