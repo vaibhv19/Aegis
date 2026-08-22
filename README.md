@@ -34,6 +34,7 @@ Ensure you have the following installed on your system:
 - Node.js (v18 or higher recommended)
 - npm (Node Package Manager)
 - Git
+- Docker (for containerized execution)
 
 ## Installation
 
@@ -214,6 +215,55 @@ To minimize execution overhead, failure-focused diagnostics are collected:
 - **Screenshots:** Taken automatically only on failed test steps (`screenshot: 'only-on-failure'`).
 - **Traces:** Recorded only when a test is retried after a failure (`trace: 'on-first-retry'`).
 - **Videos:** Captured only when a test is retried after a failure (`video: 'on-first-retry'`).
+
+### Containerization (Docker)
+
+To isolate dependencies and ensure reproducible execution across different development machines:
+
+#### Build Docker Image
+
+Build the test execution image locally:
+
+```bash
+docker build -t aegis-test .
+```
+
+#### Run Test Suite
+
+- **Run the full regression test suite (default behavior):**
+  ```bash
+  docker run --rm aegis-test
+  ```
+- **Run targeted categories:**
+  ```bash
+  docker run --rm aegis-test npm run test:smoke
+  docker run --rm aegis-test npm run test:api
+  ```
+- **Run with environment overrides:**
+  ```bash
+  docker run --rm -e BASE_URL=https://trajectory-mu-six.vercel.app -e API_BASE_URL=https://trajectory-api.duckdns.org aegis-test
+  ```
+
+#### Report & Artifact Persistence
+
+Since container filesystems are ephemeral, use volume bind mounts to persist Playwright HTML reports, execution traces, and Allure results directly to your host machine:
+
+- **PowerShell / Linux:**
+  ```bash
+  docker run --rm `
+    -v ${PWD}/playwright-report:/app/playwright-report `
+    -v ${PWD}/test-results:/app/test-results `
+    -v ${PWD}/allure-results:/app/allure-results `
+    aegis-test
+  ```
+- **Windows Command Prompt (CMD):**
+  ```cmd
+  docker run --rm ^
+    -v %cd%/playwright-report:/app/playwright-report ^
+    -v %cd%/test-results:/app/test-results ^
+    -v %cd%/allure-results:/app/allure-results ^
+    aegis-test
+  ```
 
 ### Code Quality
 
