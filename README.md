@@ -14,13 +14,13 @@ Aegis is an enterprise test automation framework and continuous integration pipe
 
 Aegis is organized under a modular directory layout:
 
-- `tests/`: Project test files (smoke tests, functional E2E tests).
-- `pages/`: Page Object models representing UI screens.
+- `tests/`: Project test files categorized by suite type (smoke, framework, etc.).
+- `pages/`: Page Object models representing UI screens (e.g. `base.page.ts`, `login.page.ts`).
 - `api/`: Programmatic API testing layer.
-- `fixtures/`: Playwright test fixtures.
-- `utils/`: Test helper utilities.
-- `config/`: Configuration definitions.
-- `test-data/`: Test payloads and files.
+- `fixtures/`: Playwright custom test fixtures (`test.fixture.ts`).
+- `utils/`: Test helper utilities (`helpers.ts`).
+- `config/`: Configuration definitions (`env.ts`).
+- `test-data/`: Test payloads and files (e.g., `users.json`).
 - `.github/workflows/`: CI pipeline configurations.
 - `docker/`: Isolation and containers environment setup.
 - `docs/`: Framework documentation.
@@ -54,14 +54,48 @@ Ensure you have the following installed on your system:
    ```
 2. Open `.env` and set the `BASE_URL` to match your target Trajectory application deployment URL:
    ```env
-   BASE_URL=http://localhost:3000
+   BASE_URL=https://trajectory-mu-six.vercel.app
    ```
 
-## Required Trajectory Dependency
+## Architecture Design
 
-The framework requires an active target instance of the **Trajectory** application to verify reachability and run test suites.
+### Page Object Model
 
-Ensure the Trajectory application is started and listening at the URL matching the configured `BASE_URL` in `.env`. If the target application is not running or accessible, the smoke test will fail with a connection error.
+Page Objects represent application page surfaces and encapsulate DOM locators and application actions.
+
+- `BasePage` ([`base.page.ts`](pages/base.page.ts)): Abstract class providing common actions (navigation, load state checks).
+- `LoginPage` ([`login.page.ts`](pages/login.page.ts)): Extends base page, encapsulates elements (email, password inputs, tab elements, submit buttons) and form actions.
+
+### Selector Strategy
+
+To ensure test stability, the framework targets elements in order of priority:
+
+1. Playwright built-in accessible role locators (`page.getByRole`)
+2. Placeholder values (`page.getByPlaceholder`)
+3. Accessible labels (`page.getByLabel`)
+4. Explicit test attributes (`data-testid`)
+5. Stable semantic text contents or stable scoped CSS elements
+
+### Custom Fixtures
+
+We use Playwright's fixture system ([`test.fixture.ts`](fixtures/test.fixture.ts)) to inject page objects directly into test parameters.
+
+```typescript
+import { test, expect } from '../../fixtures/test.fixture.js';
+
+test('example test', async ({ loginPage }) => {
+  await loginPage.navigateTo();
+  await expect(loginPage.signInSubmitButton).toBeVisible();
+});
+```
+
+### Test Categorization
+
+We support organizing tests by directory structure and naming conventions:
+
+- **Smoke Tests:** Located in `tests/smoke/` for fast sanity checks.
+- **Framework Tests:** Located in `tests/framework/` to verify framework layers and custom utilities.
+- **E2E / Regression / API / Visual:** Reserved directories under `tests/` for future execution scopes.
 
 ## Available Scripts
 
