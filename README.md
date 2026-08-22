@@ -8,7 +8,7 @@ Aegis is an enterprise test automation framework and continuous integration pipe
 
 - **Language:** TypeScript
 - **Test Runner:** Playwright
-- **Reporting:** HTML Reports
+- **Reporting:** HTML & Allure Reports
 - **Quality Tooling:** ESLint & Prettier
 - **Target App:** Trajectory
 
@@ -125,15 +125,15 @@ Aegis implements an automated CI/CD pipeline on GitHub Actions to continuously v
 - **Runner Configuration:** Executes inside Node.js 20 on an `ubuntu-latest` Linux runner.
 - **Package Integrity:** Standardizes clean dependency installs using `npm ci` with caching of the npm global store via `actions/setup-node`.
 - **Quality Gates:** Enforcement flows sequentially: Lint (`eslint .`) $\rightarrow$ Format Verification (`prettier --check .`) $\rightarrow$ Playwright Sequential Test Run (`npx playwright test --workers=1`).
-- **Failures & Artifacts:** If a run fails, the Playwright HTML test report and run traces are uploaded and stored for **14 days**.
+- **Failures & Artifacts:** If a run fails, the Playwright HTML test report, execution traces, and Allure results are uploaded as artifacts and stored for **14 days**.
 
 #### Visual Baseline Platform Strategy
 
-Because layout, font-anti-aliasing, and visual scrollbars differ between operating systems, local developers and CI runners require specific baseline baselines:
+Because layout, font-anti-aliasing, and visual scrollbars differ between operating systems, local developers and CI runners require platform-specific baseline screenshots:
 
 - **Windows baselines** are saved with the suffix `-win32.png` and are preserved for local Windows execution.
 - **Linux/Ubuntu baselines** are saved with the suffix `-linux.png`.
-- **Automated Baseline Updates:** To update the Linux baselines without needing local Linux setups, execute the GitHub Actions workflow manually via the **Actions** tab on GitHub, toggle the `workflow_dispatch` parameter `Regenerate and commit visual snapshot baselines` to `true`, and trigger the run. This automatically updates, commits, and pushes the Linux snapshots directly to `main`.
+- The CI pipeline remains **read-only** and validates visual correctness without automatically updating repository baselines.
 
 #### Known Expected Backend Defect
 
@@ -142,15 +142,15 @@ The Trajectory backend contains an authentication exception defect:
 - **Defect:** Submitting invalid login credentials returns `500 Internal Server Error` instead of the standard `401 Unauthorized`.
 - **CI/CD Mitigation:** Rather than weakening the strict validation (`expect(response.status()).toBe(401)`), this test is annotated with Playwright's native `test.fail(true, 'Trajectory backend defect')` in `tests/api/auth.spec.ts`. This narrowly isolates the failure, allowing the test to run as an "expected failure" (marking the pipeline green). If the backend is fixed, the test will unexpectedly pass, alerting developers to remove the annotation.
 
-### Test Categorization
+### Test Categorization & Tagging
 
-We support organizing tests by directory structure and naming conventions:
+Tests are tagged to support selective category execution:
 
-- **Smoke Tests:** Located in `tests/smoke/` for fast sanity checks.
-- **Framework Tests:** Located in `tests/framework/` to verify framework layers and custom utilities.
-- **E2E Tests:** Located in `tests/e2e/` (e.g. `auth.spec.ts`, `application-lifecycle.spec.ts`, `resume-management.spec.ts`) for user workflow automation.
-- **API Tests:** Located in `tests/api/` (e.g. `auth.spec.ts`, `applications.spec.ts`, `resumes.spec.ts`) for backend verification, response contract checking, and performance testing.
-- **Visual Tests:** Located in `tests/visual/` (e.g. `auth.visual.spec.ts`, `dashboard.visual.spec.ts`, `application.visual.spec.ts`, `resume.visual.spec.ts`) for page layout and component appearance stability.
+- **Smoke Tests (`@smoke`):** General system sanity validations.
+- **Framework Tests (`@framework`):** Page Object Model and configuration validations.
+- **E2E UI Tests (`@e2e`):** Multi-page functional user workflows.
+- **API Tests (`@api`):** Backend verification, contract, and response checks.
+- **Visual Tests (`@visual`):** Cross-browser visual comparisons.
 
 ## Available Scripts
 
@@ -166,22 +166,54 @@ Run the following commands to check linting, formatting, and execute tests:
   ```bash
   npm run test:headed
   ```
-- **Run targeted UI E2E tests specifically:**
+
+#### Targeted Test Categories
+
+- **Run smoke tests only:**
   ```bash
-  npx playwright test tests/e2e
+  npm run test:smoke
   ```
-- **Run targeted API E2E tests specifically:**
+- **Run E2E UI tests only:**
   ```bash
-  npx playwright test tests/api
+  npm run test:e2e
   ```
-- **Run targeted Visual tests specifically:**
+- **Run API verification tests only:**
   ```bash
-  npx playwright test tests/visual
+  npm run test:api
   ```
-- **Update Visual snapshots baselines specifically:**
+- **Run visual regression tests only:**
   ```bash
-  npx playwright test tests/visual --update-snapshots --workers=1
+  npm run test:visual
   ```
+
+### Reporting & Diagnostics
+
+We support native Playwright HTML reporting and integrated Allure Reports:
+
+- **Playwright HTML Report:** Generated to `playwright-report/` after each run. To view it:
+  ```bash
+  npx playwright show-report
+  ```
+- **Generate Allure Report:** Compiles raw test outputs in `allure-results/` into a human-readable layout in `allure-report/`:
+  ```bash
+  npm run allure:generate
+  ```
+- **Open Allure Report:** Launches a local web server to display the report:
+  ```bash
+  npm run allure:open
+  ```
+- **Clear Allure Results:** Removes generated Allure assets:
+  ```bash
+  npm run allure:clear
+  ```
+
+#### Failure Diagnostics
+
+To minimize execution overhead, failure-focused diagnostics are collected:
+
+- **Screenshots:** Taken automatically only on failed test steps (`screenshot: 'only-on-failure'`).
+- **Traces:** Recorded only when a test is retried after a failure (`trace: 'on-first-retry'`).
+- **Videos:** Captured only when a test is retried after a failure (`video: 'on-first-retry'`).
 
 ### Code Quality
 
