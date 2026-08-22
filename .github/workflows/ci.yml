@@ -2,26 +2,10 @@ name: Aegis CI Pipeline
 
 on:
   push:
-    branches:
-      - main
-    paths-ignore:
-      - '**/*.md'
-      - '.gitignore'
+    branches: [main]
   pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - '**/*.md'
-      - '.gitignore'
+    branches: [main]
   workflow_dispatch:
-    inputs:
-      update_snapshots:
-        description: 'Regenerate and commit visual snapshot baselines'
-        required: false
-        default: 'false'
-
-permissions:
-  contents: write
 
 jobs:
   ci:
@@ -32,8 +16,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js v20
         uses: actions/setup-node@v4
@@ -53,17 +35,7 @@ jobs:
       - name: Install Playwright Browsers & Dependencies
         run: npx playwright install --with-deps
 
-      - name: Regenerate Visual Snapshot Baselines
-        run: npx playwright test tests/visual --update-snapshots --workers=1
-
-      - name: Commit Visual Snapshots
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: 'test: regenerate and commit Linux visual baseline snapshots'
-          file_pattern: 'tests/visual/**'
-
       - name: Run Playwright Test Suite
-        if: false
         run: npx playwright test --workers=1
 
       - name: Upload Playwright HTML Report
