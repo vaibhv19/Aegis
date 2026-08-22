@@ -87,7 +87,6 @@ test.describe('Aegis Auth API Verification Tests', () => {
       password: 'WrongPassword123!',
     });
 
-    // Note: Trajectory backend currently returns 500 instead of 401 on login failure due to unhandled Auth exceptions
-    expect([401, 500]).toContain(response.status());
+    expect(response.status()).toBe(401);
   });
 });
