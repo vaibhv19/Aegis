@@ -1,51 +1,26 @@
 import { test, expect } from '../../fixtures/test.fixture.js';
-import { generateUniqueEmail } from '../../utils/helpers.js';
+import { generateJobApplicationData } from '../../utils/test-data.factory.js';
 
 test.describe('Aegis Applications API E2E Lifecycle Tests', () => {
-  const password = 'TestPassword123!';
-  let token: string;
-  let profileId: string;
-
-  test.beforeEach(async ({ authApi, applicationsApi }) => {
-    const email = generateUniqueEmail('app_api');
-    const registerResponse = await authApi.register({
-      fullName: 'API App Tester',
-      email,
-      password,
-    });
-    expect(registerResponse.status()).toBe(200);
-
-    const regBody = await registerResponse.json();
-    token = regBody.token;
-
-    // Authenticate API contexts
-    authApi.setToken(token);
-    applicationsApi.setToken(token);
-
-    // Get career profile ID
-    const profilesResponse = await applicationsApi.getProfiles();
-    expect(profilesResponse.status()).toBe(200);
-    const profiles = await profilesResponse.json();
-    expect(profiles.length).toBeGreaterThan(0);
-    profileId = profiles[0].id;
-  });
-
   test(
     'should successfully execute a full job application CRUD lifecycle with contract & performance checks',
     { tag: '@api' },
-    async ({ applicationsApi }) => {
-      const companyName = `API Company ${Date.now()}`;
-      const roleTitle = 'Principal Automation Engineer';
+    async ({ applicationsApi, authenticatedUser }) => {
+      console.log(`Running API lifecycle test as: ${authenticatedUser.user.email}`);
 
-      // 1. CREATE application
+      // 1. Get career profile ID
+      const profilesResponse = await applicationsApi.getProfiles();
+      expect(profilesResponse.status()).toBe(200);
+      const profiles = await profilesResponse.json();
+      expect(profiles.length).toBeGreaterThan(0);
+      const profileId = profiles[0].id;
+
+      // 2. Generate application test data
+      const appData = generateJobApplicationData(profileId);
+
+      // 3. CREATE application
       const createStartTime = Date.now();
-      const createResponse = await applicationsApi.createApplication({
-        companyName,
-        roleTitle,
-        profileId,
-        status: 'APPLIED',
-        dateApplied: new Date().toISOString().slice(0, 10),
-      });
+      const createResponse = await applicationsApi.createApplication(appData);
       const createDuration = Date.now() - createStartTime;
 
       expect(createResponse.status()).toBe(201);
@@ -53,24 +28,24 @@ test.describe('Aegis Applications API E2E Lifecycle Tests', () => {
 
       const application = await createResponse.json();
       expect(application).toHaveProperty('id');
-      expect(application.companyName).toBe(companyName);
-      expect(application.roleTitle).toBe(roleTitle);
+      expect(application.companyName).toBe(appData.companyName);
+      expect(application.roleTitle).toBe(appData.roleTitle);
       expect(application.status).toBe('APPLIED');
       expect(typeof application.id).toBe('string');
       const applicationId = application.id;
 
-      // 2. READ/GET application details
+      // 4. READ/GET application details
       const readResponse = await applicationsApi.getApplication(applicationId);
       expect(readResponse.status()).toBe(200);
       const readApp = await readResponse.json();
       expect(readApp.id).toBe(applicationId);
-      expect(readApp.companyName).toBe(companyName);
+      expect(readApp.companyName).toBe(appData.companyName);
 
-      // 3. UPDATE application status
+      // 5. UPDATE application status
       const updateResponse = await applicationsApi.updateApplication(applicationId, {
         id: applicationId,
-        companyName,
-        roleTitle,
+        companyName: appData.companyName,
+        roleTitle: appData.roleTitle,
         profileId,
         status: 'OA',
         oaDateTime: new Date().toISOString(),
@@ -82,11 +57,11 @@ test.describe('Aegis Applications API E2E Lifecycle Tests', () => {
       expect(updatedApp.status).toBe('OA');
       expect(updatedApp.meetingLink).toBe('https://test-link.com');
 
-      // 4. DELETE application
+      // 6. DELETE application
       const deleteResponse = await applicationsApi.deleteApplication(applicationId);
       expect(deleteResponse.ok()).toBe(true);
 
-      // 5. VERIFY deletion (GET should return 404)
+      // 7. VERIFY deletion (GET should return 404)
       const verifyResponse = await applicationsApi.getApplication(applicationId);
       expect(verifyResponse.status()).toBe(404);
     }

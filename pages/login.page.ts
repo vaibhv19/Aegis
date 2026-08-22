@@ -74,4 +74,28 @@ export class LoginPage extends BasePage {
   async submitSignIn(): Promise<void> {
     await this.signInSubmitButton.click();
   }
+
+  /**
+   * Registers a new user account via the UI and waits for redirect to dashboard
+   */
+  async registerNewUser(fullName: string, email: string, password: string): Promise<void> {
+    await this.switchToSignUp();
+    await this.fullNameInput.fill(fullName);
+    await this.emailInput.fill(email);
+    await this.passwordInput.fill(password);
+    await this.signUpSubmitButton.click();
+    await this.page.waitForURL(/.*\/dashboard/, { timeout: 15000 });
+    await this.page.waitForLoadState('networkidle');
+  }
+
+  /**
+   * Logs in a user via the UI and waits for redirect to dashboard
+   */
+  async loginUser(email: string, password: string): Promise<void> {
+    await this.switchToSignIn();
+    await this.fillSignInCredentials(email, password);
+    await this.submitSignIn();
+    await this.page.waitForURL(/.*\/dashboard/, { timeout: 15000 });
+    await this.page.waitForLoadState('networkidle');
+  }
 }

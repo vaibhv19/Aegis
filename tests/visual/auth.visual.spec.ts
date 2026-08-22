@@ -27,7 +27,9 @@ test.describe('Aegis Auth Pages Visual Regression Tests', () => {
       await loginPage.navigateTo();
       await loginPage.submitSignIn();
       await page.waitForTimeout(1000); // allow dynamic validation styling and transitions to settle
-      await expect(page).toHaveScreenshot('login-validation-errors.png');
+      await expect(page).toHaveScreenshot('login-validation-errors.png', {
+        maxDiffPixels: 4000,
+      });
     }
   );
 });

@@ -21,6 +21,13 @@ export class BaseApi {
   }
 
   /**
+   * Retrieves the current bearer token.
+   */
+  getToken(): string | undefined {
+    return this.token;
+  }
+
+  /**
    * Builds headers with optional bearer token.
    */
   protected getHeaders(): Record<string, string> {

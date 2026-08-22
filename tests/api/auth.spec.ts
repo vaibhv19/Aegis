@@ -1,23 +1,16 @@
 import { test, expect } from '../../fixtures/test.fixture.js';
-import { generateUniqueEmail } from '../../utils/helpers.js';
+import { generateUserData, generateInvalidCredentials } from '../../utils/test-data.factory.js';
 import { AuthApi } from '../../api/auth.api.js';
 
 test.describe('Aegis Auth API Verification Tests', () => {
-  const password = 'TestPassword123!';
-  const fullName = 'API Testing User';
-
   test(
     'should successfully register a new user, validate contract, and verify response time',
     { tag: '@api' },
     async ({ authApi }) => {
-      const email = generateUniqueEmail('api_register');
+      const user = generateUserData();
 
       const startTime = Date.now();
-      const response = await authApi.register({
-        fullName,
-        email,
-        password,
-      });
+      const response = await authApi.register(user);
       const duration = Date.now() - startTime;
 
       // Validate status code
@@ -30,8 +23,8 @@ test.describe('Aegis Auth API Verification Tests', () => {
       const body = await response.json();
       expect(body).toHaveProperty('token');
       expect(body).toHaveProperty('refreshToken');
-      expect(body).toHaveProperty('email', email);
-      expect(body).toHaveProperty('fullName', fullName);
+      expect(body).toHaveProperty('email', user.email);
+      expect(body).toHaveProperty('fullName', user.fullName);
       expect(body).toHaveProperty('userId');
 
       expect(typeof body.token).toBe('string');
@@ -44,21 +37,17 @@ test.describe('Aegis Auth API Verification Tests', () => {
     'should login successfully, retrieve profile, and validate unauthorized status',
     { tag: '@api' },
     async ({ authApi }) => {
-      const email = generateUniqueEmail('api_login');
+      const user = generateUserData();
 
       // 1. Register user
-      const regResponse = await authApi.register({
-        fullName,
-        email,
-        password,
-      });
+      const regResponse = await authApi.register(user);
       expect(regResponse.status()).toBe(200);
 
       // 2. Perform Login and check response time
       const loginStartTime = Date.now();
       const loginResponse = await authApi.login({
-        email,
-        password,
+        email: user.email,
+        password: user.password,
       });
       const loginDuration = Date.now() - loginStartTime;
 
@@ -75,8 +64,8 @@ test.describe('Aegis Auth API Verification Tests', () => {
       expect(profileResponse.status()).toBe(200);
 
       const profile = await profileResponse.json();
-      expect(profile.email).toBe(email);
-      expect(profile.fullName).toBe(fullName);
+      expect(profile.email).toBe(user.email);
+      expect(profile.fullName).toBe(user.fullName);
 
       // 4. Retrieve user profile without token (Unauthorized)
       const unauthorizedAuthApi = new AuthApi(authApi['requestContext']);
@@ -95,10 +84,8 @@ test.describe('Aegis Auth API Verification Tests', () => {
         'Trajectory backend defect: invalid login credentials return 500 instead of 401'
       );
 
-      const response = await authApi.login({
-        email: 'nonexistent_api_user@example.com',
-        password: 'WrongPassword123!',
-      });
+      const invalidCreds = generateInvalidCredentials();
+      const response = await authApi.login(invalidCreds);
 
       expect(response.status()).toBe(401);
     }

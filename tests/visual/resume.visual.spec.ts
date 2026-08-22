@@ -1,24 +1,12 @@
 import { test, expect } from '../../fixtures/test.fixture.js';
-import { generateUniqueEmail } from '../../utils/helpers.js';
 
 test.describe('Aegis Resume Page Visual Regression Tests', () => {
-  const password = 'TestPassword123!';
-
-  test.beforeEach(async ({ loginPage, page }) => {
-    const email = generateUniqueEmail('res_vis');
-    await loginPage.navigateTo();
-    await loginPage.switchToSignUp();
-    await loginPage.fullNameInput.fill('Aegis Visual Tester');
-    await loginPage.emailInput.fill(email);
-    await loginPage.passwordInput.fill(password);
-    await loginPage.signUpSubmitButton.click();
-    await expect(page).toHaveURL(/.*\/dashboard/, { timeout: 15000 });
-  });
-
   test(
     'should match empty resumes page and upload modal form visual layouts',
     { tag: '@visual' },
-    async ({ resumePage, page }) => {
+    async ({ resumePage, page, authenticatedUser }) => {
+      console.log(`Running resume visual test as: ${authenticatedUser.user.email}`);
+
       // 1. Go to Resumes page
       await resumePage.navigateToResumes();
 

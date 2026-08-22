@@ -265,6 +265,16 @@ Since container filesystems are ephemeral, use volume bind mounts to persist Pla
     aegis-test
   ```
 
+### Test Data & Teardown Lifecycle
+
+Aegis uses a centralized, deterministic, and isolated approach to test data and environment cleanliness:
+
+- **Centralized Test Data Factory ([`test-data.factory.ts`](file:///d:/Coding/Projects----Testing/Aegis/utils/test-data.factory.ts)):** Centralizes the creation of all mock payloads for users, job applications, resumes, and negative authentication scenarios.
+- **Identity Isolation & Baseline Preservation:** Generated users use dynamic, unique emails (combining timestamps and random values) to avoid cross-run collisions. They use the default full name `'Aegis Visual Tester'` to remain compatible with existing visual baselines.
+- **Auto-Cleanup Teardown Hook:** The custom `applicationsApi` fixture intercepts test completions and automatically deletes all job applications created under the authenticated user. This teardown is resilient to test assertion failures because it runs in Playwright's fixture teardown block.
+- **Reusable `authenticatedUser` Fixture:** Encapsulates fast API-based registration, API client authentication (injecting Bearer tokens to `applicationsApi` and `resumesApi`), and UI-based login. This reduces setup boilerplate across E2E and visual tests.
+- **Hydration Settling:** Reusable login/registration UI actions await the `'networkidle'` load state to guarantee the frontend is fully hydrated and ready for click events, preventing interaction flakes in headless webkit runners.
+
 ### Code Quality
 
 - **Run ESLint checks:**

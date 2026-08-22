@@ -1,50 +1,33 @@
 import { test, expect } from '../../fixtures/test.fixture.js';
-import { generateUniqueEmail } from '../../utils/helpers.js';
+import { generateUserData, generateInvalidCredentials } from '../../utils/test-data.factory.js';
 
 test.describe('Aegis Authentication E2E Tests', () => {
-  const password = 'TestPassword123!';
-
   test(
     'should successfully register a new user, logout, and sign back in',
     { tag: '@e2e' },
     async ({ loginPage, dashboardPage }) => {
-      const email = generateUniqueEmail('auth_user');
+      const user = generateUserData();
 
-      // 1. Navigate to landing page
+      // 1. Navigate to landing page and register E2E
       await loginPage.navigateTo();
+      await loginPage.registerNewUser(user.fullName, user.email, user.password);
 
-      // 2. Switch to Sign Up tab
-      await loginPage.switchToSignUp();
-
-      // 3. Fill registration details
-      await loginPage.fullNameInput.fill('Aegis Automation User');
-      await loginPage.emailInput.fill(email);
-      await loginPage.passwordInput.fill(password);
-
-      // 4. Submit sign up
-      await loginPage.signUpSubmitButton.click();
-
-      // 5. Verify redirect to dashboard
-      await expect(loginPage.page).toHaveURL(/.*\/dashboard/, { timeout: 15000 });
-
-      // 6. Logout using the header profile dropdown
+      // 2. Logout using the header profile dropdown
       await dashboardPage.logout();
 
-      // 7. Verify back on Login page
+      // 3. Verify back on Login page
       await expect(loginPage.page).toHaveURL(/.*\/login/);
 
-      // 8. Sign back in
-      await loginPage.fillSignInCredentials(email, password);
-      await loginPage.submitSignIn();
-
-      // 9. Confirm logged in again
-      await expect(loginPage.page).toHaveURL(/.*\/dashboard/, { timeout: 15000 });
+      // 4. Sign back in
+      await loginPage.loginUser(user.email, user.password);
     }
   );
 
   test('should fail to sign in with incorrect password', { tag: '@e2e' }, async ({ loginPage }) => {
+    const invalidCreds = generateInvalidCredentials();
+
     await loginPage.navigateTo();
-    await loginPage.fillSignInCredentials('nonexistent@example.com', 'WrongPassword123!');
+    await loginPage.fillSignInCredentials(invalidCreds.email, invalidCreds.password);
     await loginPage.submitSignIn();
 
     // Verify the URL did not change and remains on the login view
