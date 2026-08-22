@@ -14,13 +14,13 @@ Aegis is an enterprise test automation framework and continuous integration pipe
 
 Aegis is organized under a modular directory layout:
 
-- `tests/`: Project test files categorized by suite type (smoke, framework, etc.).
-- `pages/`: Page Object models representing UI screens (e.g. `base.page.ts`, `login.page.ts`).
+- `tests/`: Project test files categorized by suite type (smoke, framework, E2E, etc.).
+- `pages/`: Page Object models representing UI screens (e.g. `base.page.ts`, `login.page.ts`, `dashboard.page.ts`, `application.page.ts`, `resume.page.ts`).
 - `api/`: Programmatic API testing layer.
 - `fixtures/`: Playwright custom test fixtures (`test.fixture.ts`).
 - `utils/`: Test helper utilities (`helpers.ts`).
 - `config/`: Configuration definitions (`env.ts`).
-- `test-data/`: Test payloads and files (e.g., `users.json`).
+- `test-data/`: Test payloads and files (e.g., `users.json`, `sample-resume.pdf`).
 - `.github/workflows/`: CI pipeline configurations.
 - `docker/`: Isolation and containers environment setup.
 - `docs/`: Framework documentation.
@@ -55,6 +55,10 @@ Ensure you have the following installed on your system:
 2. Open `.env` and set the `BASE_URL` to match your target Trajectory application deployment URL:
    ```env
    BASE_URL=https://trajectory-mu-six.vercel.app
+
+   # (Optional) Reusable static test user credentials
+   TEST_USER_EMAIL=your-static-user@example.com
+   TEST_USER_PASSWORD=your-static-password
    ```
 
 ## Architecture Design
@@ -64,7 +68,10 @@ Ensure you have the following installed on your system:
 Page Objects represent application page surfaces and encapsulate DOM locators and application actions.
 
 - `BasePage` ([`base.page.ts`](pages/base.page.ts)): Abstract class providing common actions (navigation, load state checks).
-- `LoginPage` ([`login.page.ts`](pages/login.page.ts)): Extends base page, encapsulates elements (email, password inputs, tab elements, submit buttons) and form actions.
+- `LoginPage` ([`login.page.ts`](pages/login.page.ts)): Extends base page, encapsulates sign-in/sign-up forms, input inputs, and tab switches.
+- `DashboardPage` ([`dashboard.page.ts`](pages/dashboard.page.ts)): Extends base page, encapsulates main navigation tabs, global sidebar buttons, and profile menu logout.
+- `ApplicationPage` ([`application.page.ts`](pages/application.page.ts)): Extends base page, encapsulates modal form fields, dynamic OA/Interview conditional elements, and job detail drawer deletion.
+- `ResumePage` ([`resume.page.ts`](pages/resume.page.ts)): Extends base page, encapsulates drag & drop file upload input, changelog text area, and versions matrix representation.
 
 ### Selector Strategy
 
@@ -83,9 +90,11 @@ We use Playwright's fixture system ([`test.fixture.ts`](fixtures/test.fixture.ts
 ```typescript
 import { test, expect } from '../../fixtures/test.fixture.js';
 
-test('example test', async ({ loginPage }) => {
+test('example test', async ({ loginPage, dashboardPage }) => {
   await loginPage.navigateTo();
-  await expect(loginPage.signInSubmitButton).toBeVisible();
+  await loginPage.fillSignInCredentials('user@example.com', 'pass');
+  await loginPage.submitSignIn();
+  await expect(dashboardPage.addApplicationButton).toBeVisible();
 });
 ```
 
@@ -95,7 +104,8 @@ We support organizing tests by directory structure and naming conventions:
 
 - **Smoke Tests:** Located in `tests/smoke/` for fast sanity checks.
 - **Framework Tests:** Located in `tests/framework/` to verify framework layers and custom utilities.
-- **E2E / Regression / API / Visual:** Reserved directories under `tests/` for future execution scopes.
+- **E2E Tests:** Located in `tests/e2e/` (e.g. `auth.spec.ts`, `application-lifecycle.spec.ts`, `resume-management.spec.ts`) for user workflow automation.
+- **Regression / API / Visual:** Reserved directories under `tests/` for future execution scopes.
 
 ## Available Scripts
 
@@ -103,13 +113,17 @@ Run the following commands to check linting, formatting, and execute tests:
 
 ### Running Tests
 
-- **Run all headless tests:**
+- **Run all headless tests (smoke, framework, and E2E):**
   ```bash
   npm run test
   ```
 - **Run tests in headed mode:**
   ```bash
   npm run test:headed
+  ```
+- **Run targeted E2E tests specifically:**
+  ```bash
+  npx playwright test tests/e2e
   ```
 
 ### Code Quality

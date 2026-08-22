@@ -6,11 +6,15 @@ dotenv.config();
 export interface Config {
   baseUrl: string;
   envName: string;
+  testUserEmail?: string;
+  testUserPassword?: string;
 }
 
 export const config: Config = {
   baseUrl: process.env.BASE_URL || 'https://trajectory-mu-six.vercel.app',
   envName: process.env.NODE_ENV || 'development',
+  testUserEmail: process.env.TEST_USER_EMAIL,
+  testUserPassword: process.env.TEST_USER_PASSWORD,
 };
 
 // Validate critical configuration
