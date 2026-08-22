@@ -14,7 +14,7 @@ Aegis is an enterprise test automation framework and continuous integration pipe
 
 Aegis is organized under a modular directory layout:
 
-- `tests/`: Project test files categorized by suite type (smoke, framework, E2E, API, etc.).
+- `tests/`: Project test files categorized by suite type (smoke, framework, E2E, API, visual, etc.).
 - `pages/`: Page Object models representing UI screens (e.g. `base.page.ts`, `login.page.ts`, `dashboard.page.ts`, `application.page.ts`, `resume.page.ts`).
 - `api/`: Programmatic API client verification layer (e.g. `base.api.ts`, `auth.api.ts`, `applications.api.ts`, `resumes.api.ts`).
 - `fixtures/`: Playwright custom test fixtures (`test.fixture.ts`).
@@ -28,7 +28,6 @@ Aegis is organized under a modular directory layout:
 ## Prerequisites
 
 Ensure you have the following installed on your system:
-
 - Node.js (v18 or higher recommended)
 - npm (Node Package Manager)
 - Git
@@ -83,6 +82,14 @@ API clients encapsulate backend API interactions, request payload construction, 
 - `ApplicationsApi` ([`applications.api.ts`](api/applications.api.ts)): Extends base API client, manages applications CRUD and career profiles retrieval.
 - `ResumesApi` ([`resumes.api.ts`](api/resumes.api.ts)): Extends base API client, manages versioned resumes uploads (as multipart) and list retrievals.
 
+### Visual Regression Layer
+
+Visual regression testing utilizes Playwright's native screenshot comparison to verify visual stability:
+
+- **Configured Comparators**: Disables active animations and transitions (`animations: 'disabled'`), configures custom subpixel tolerance (`maxDiffPixels: 50`), and hides the blinking text insertion cursor (`caret: 'hide'`) to ensure visual determinism.
+- **Cross-Browser Visual Strategy**: Runs visual validations against Chromium, Firefox, and WebKit to capture rendering characteristics per browser engine.
+- **Dynamic Content Handling**: Uses bounding box masking to hide dynamic dates and profile elements from snapshot assertions.
+
 ### Selector Strategy
 
 To ensure test stability, the framework targets elements in order of priority:
@@ -116,6 +123,7 @@ We support organizing tests by directory structure and naming conventions:
 - **Framework Tests:** Located in `tests/framework/` to verify framework layers and custom utilities.
 - **E2E Tests:** Located in `tests/e2e/` (e.g. `auth.spec.ts`, `application-lifecycle.spec.ts`, `resume-management.spec.ts`) for user workflow automation.
 - **API Tests:** Located in `tests/api/` (e.g. `auth.spec.ts`, `applications.spec.ts`, `resumes.spec.ts`) for backend verification, response contract checking, and performance testing.
+- **Visual Tests:** Located in `tests/visual/` (e.g. `auth.visual.spec.ts`, `dashboard.visual.spec.ts`, `application.visual.spec.ts`, `resume.visual.spec.ts`) for page layout and component appearance stability.
 
 ## Available Scripts
 
@@ -123,7 +131,7 @@ Run the following commands to check linting, formatting, and execute tests:
 
 ### Running Tests
 
-- **Run all headless tests (smoke, framework, E2E, and API):**
+- **Run all headless tests (smoke, framework, E2E, API, and visual):**
   ```bash
   npm run test
   ```
@@ -138,6 +146,14 @@ Run the following commands to check linting, formatting, and execute tests:
 - **Run targeted API E2E tests specifically:**
   ```bash
   npx playwright test tests/api
+  ```
+- **Run targeted Visual tests specifically:**
+  ```bash
+  npx playwright test tests/visual
+  ```
+- **Update Visual snapshots baselines specifically:**
+  ```bash
+  npx playwright test tests/visual --update-snapshots --workers=1
   ```
 
 ### Code Quality

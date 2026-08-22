@@ -54,5 +54,12 @@ export default defineConfig({
   timeout: 60000, // 60 seconds global test timeout
   expect: {
     timeout: 5000, // 5 seconds assertion timeout
+    toHaveScreenshot: {
+      maxDiffPixels: 50, // subpixel tolerance for dynamic rendering artifacts
+      threshold: 0.2, // color match difference sensitivity
+      animations: 'disabled', // automatically disable active CSS transitions/animations
+      timeout: 20000, // 20 seconds timeout specifically for slow visual assertions (e.g. WebKit)
+      caret: 'hide', // automatically hide blinking text caret/cursor in screenshots
+    },
   },
 });
