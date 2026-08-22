@@ -6,15 +6,24 @@
   "scripts": {
     "test": "playwright test",
     "test:headed": "playwright test --headed",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:e2e": "playwright test --grep @e2e --workers=1",
+    "test:api": "playwright test --grep @api --workers=1",
+    "test:visual": "playwright test --grep @visual --workers=1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format:check": "prettier --check .",
-    "format:write": "prettier --write ."
+    "format:write": "prettier --write .",
+    "allure:generate": "allure generate allure-results --clean -o allure-report",
+    "allure:open": "allure open allure-report",
+    "allure:clear": "node -e \"const fs = require('fs'); fs.rmSync('allure-results', { recursive: true, force: true }); fs.rmSync('allure-report', { recursive: true, force: true });\""
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
     "@playwright/test": "^1.46.0",
     "@types/node": "^20.14.9",
+    "allure-commandline": "^2.43.0",
+    "allure-playwright": "^3.10.2",
     "dotenv": "^16.4.5",
     "eslint": "^9.9.0",
     "eslint-config-prettier": "^9.1.0",
