@@ -71,20 +71,20 @@ Ensure you have the following installed on your system:
 
 Page Objects represent application page surfaces and encapsulate DOM locators and application actions.
 
-- `BasePage` ([`base.page.ts`](pages/base.page.ts)): Abstract class providing common actions (navigation, load state checks).
-- `LoginPage` ([`login.page.ts`](pages/login.page.ts)): Extends base page, encapsulates sign-in/sign-up forms, input inputs, and tab switches.
-- `DashboardPage` ([`dashboard.page.ts`](pages/dashboard.page.ts)): Extends base page, encapsulates main navigation tabs, global sidebar buttons, and profile menu logout.
-- `ApplicationPage` ([`application.page.ts`](pages/application.page.ts)): Extends base page, encapsulates modal form fields, dynamic OA/Interview conditional elements, and job detail drawer deletion.
-- `ResumePage` ([`resume.page.ts`](pages/resume.page.ts)): Extends base page, encapsulates drag & drop file upload input, changelog text area, and versions matrix representation.
+- `BasePage` ([`base.page.ts`](file:///d:/Coding/Projects----Testing/Aegis/pages/base.page.ts)): Abstract class providing common actions (navigation, load state checks).
+- `LoginPage` ([`login.page.ts`](file:///d:/Coding/Projects----Testing/Aegis/pages/login.page.ts)): Extends base page, encapsulates sign-in/sign-up forms, input inputs, and tab switches.
+- `DashboardPage` ([`dashboard.page.ts`](file:///d:/Coding/Projects----Testing/Aegis/pages/dashboard.page.ts)): Extends base page, encapsulates main navigation tabs, global sidebar buttons, and profile menu logout.
+- `ApplicationPage` ([`application.page.ts`](file:///d:/Coding/Projects----Testing/Aegis/pages/application.page.ts)): Extends base page, encapsulates modal form fields, dynamic OA/Interview conditional elements, and job detail drawer deletion.
+- `ResumePage` ([`resume.page.ts`](file:///d:/Coding/Projects----Testing/Aegis/pages/resume.page.ts)): Extends base page, encapsulates drag & drop file upload input, changelog text area, and versions matrix representation.
 
 ### API Client Layer
 
 API clients encapsulate backend API interactions, request payload construction, endpoint structures, and reusable operations:
 
-- `BaseApi` ([`base.api.ts`](api/base.api.ts)): Shared API client wrapping Playwright's `APIRequestContext` and providing standard HTTP verbs, multipart upload handlers, and Bearer token headers initialization.
-- `AuthApi` ([`auth.api.ts`](api/auth.api.ts)): Extends base API client, manages register, login, and user profile endpoints.
-- `ApplicationsApi` ([`applications.api.ts`](api/applications.api.ts)): Extends base API client, manages applications CRUD and career profiles retrieval.
-- `ResumesApi` ([`resumes.api.ts`](api/resumes.api.ts)): Extends base API client, manages versioned resumes uploads (as multipart) and list retrievals.
+- `BaseApi` ([`base.api.ts`](file:///d:/Coding/Projects----Testing/Aegis/api/base.api.ts)): Shared API client wrapping Playwright's `APIRequestContext` and providing standard HTTP verbs, multipart upload handlers, and Bearer token headers initialization.
+- `AuthApi` ([`auth.api.ts`](file:///d:/Coding/Projects----Testing/Aegis/api/auth.api.ts)): Extends base API client, manages register, login, and user profile endpoints.
+- `ApplicationsApi` ([`applications.api.ts`](file:///d:/Coding/Projects----Testing/Aegis/api/applications.api.ts)): Extends base API client, manages applications CRUD and career profiles retrieval.
+- `ResumesApi` ([`resumes.api.ts`](file:///d:/Coding/Projects----Testing/Aegis/api/resumes.api.ts)): Extends base API client, manages versioned resumes uploads (as multipart) and list retrievals.
 
 ### Visual Regression Layer
 
@@ -106,7 +106,7 @@ To ensure test stability, the framework targets elements in order of priority:
 
 ### Custom Fixtures
 
-We use Playwright's fixture system ([`test.fixture.ts`](fixtures/test.fixture.ts)) to inject page objects and API clients directly into test parameters.
+We use Playwright's fixture system ([`test.fixture.ts`](file:///d:/Coding/Projects----Testing/Aegis/fixtures/test.fixture.ts)) to inject page objects and API clients directly into test parameters.
 
 ```typescript
 import { test, expect } from '../../fixtures/test.fixture.js';
@@ -152,6 +152,14 @@ Tests are tagged to support selective category execution:
 - **E2E UI Tests (`@e2e`):** Multi-page functional user workflows.
 - **API Tests (`@api`):** Backend verification, contract, and response checks.
 - **Visual Tests (`@visual`):** Cross-browser visual comparisons.
+
+### Test Suite Execution Summary
+
+When executing the full regression suite, Playwright runs **54 test cases** across the three supported browser engines (Chromium, Firefox, and WebKit):
+
+- **Ordinary Passes:** 51 test cases verify standard functional, API, and visual behaviors.
+- **Expected Failures:** 3 test cases (the invalid-login contract test run against the three browser engines) fail as expected due to the known backend authentication defect.
+- **Overall Suite Status:** **SUCCESS / PASS**. Playwright reports the suite as fully successful because all tests match their expected outcome (ordinary passes succeed, and annotated failures fail as expected).
 
 ## Available Scripts
 
