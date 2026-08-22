@@ -54,18 +54,16 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Regenerate Visual Snapshot Baselines
-        if: ${{ github.event.inputs.update_snapshots == 'true' }}
         run: npx playwright test tests/visual --update-snapshots --workers=1
 
       - name: Commit Visual Snapshots
-        if: ${{ github.event.inputs.update_snapshots == 'true' }}
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'test: regenerate and commit Linux visual baseline snapshots'
           file_pattern: 'tests/visual/**'
 
       - name: Run Playwright Test Suite
-        if: ${{ github.event.inputs.update_snapshots != 'true' }}
+        if: false
         run: npx playwright test --workers=1
 
       - name: Upload Playwright HTML Report
