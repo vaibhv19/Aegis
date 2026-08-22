@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Aegis Framework Smoke Tests', () => {
-  test('verify target application is reachable', async ({ page, baseURL }) => {
+  test('verify target application is reachable', { tag: '@smoke' }, async ({ page, baseURL }) => {
     console.log(`Attempting to connect to target application at: ${baseURL}`);
 
     // Navigate to the base URL
