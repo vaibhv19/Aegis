@@ -39,7 +39,7 @@ export class ResumePage extends BasePage {
       // Wait up to 5 seconds for the "Upload First Resume" button to be visible
       await this.uploadFirstResumeButton.waitFor({ state: 'visible', timeout: 5000 });
       await this.uploadFirstResumeButton.click();
-    } catch (e) {
+    } catch {
       // If it's not visible (e.g. resumes already exist), click the header "Add" button and select Upload Resume
       await this.page.locator('header').getByRole('button', { name: 'Add' }).first().click();
       await this.page
