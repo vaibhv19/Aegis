@@ -1,0 +1,14 @@
+node_modules/
+.git/
+.env
+.env.local
+allure-results/
+allure-report/
+playwright-report/
+test-results/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vscode/
+.idea/
+.DS_Store
