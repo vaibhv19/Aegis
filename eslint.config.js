@@ -7,7 +7,14 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   eslintConfigPrettier,
   {
-    ignores: ['node_modules/', 'dist/', 'playwright-report/', 'test-results/'],
+    ignores: [
+      'node_modules/',
+      'dist/',
+      'playwright-report/',
+      'test-results/',
+      'allure-report/',
+      'allure-results/',
+    ],
   },
   {
     rules: {
