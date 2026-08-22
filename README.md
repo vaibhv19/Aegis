@@ -1,5 +1,7 @@
 # Aegis
 
+[![Aegis CI Pipeline](https://github.com/vaibhv19/Aegis/workflows/Aegis%20CI%20Pipeline/badge.svg)](https://github.com/vaibhv19/Aegis/actions/workflows/ci.yml)
+
 Aegis is an enterprise test automation framework and continuous integration pipeline targeting the Trajectory platform.
 
 ## Technology Stack
@@ -28,6 +30,7 @@ Aegis is organized under a modular directory layout:
 ## Prerequisites
 
 Ensure you have the following installed on your system:
+
 - Node.js (v18 or higher recommended)
 - npm (Node Package Manager)
 - Git
@@ -114,6 +117,30 @@ test('example test', async ({ loginPage, dashboardPage }) => {
   await expect(dashboardPage.addApplicationButton).toBeVisible();
 });
 ```
+
+### CI/CD Pipeline & Quality Gates
+
+Aegis implements an automated CI/CD pipeline on GitHub Actions to continuously verify the repository:
+
+- **Runner Configuration:** Executes inside Node.js 20 on an `ubuntu-latest` Linux runner.
+- **Package Integrity:** Standardizes clean dependency installs using `npm ci` with caching of the npm global store via `actions/setup-node`.
+- **Quality Gates:** Enforcement flows sequentially: Lint (`eslint .`) $\rightarrow$ Format Verification (`prettier --check .`) $\rightarrow$ Playwright Sequential Test Run (`npx playwright test --workers=1`).
+- **Failures & Artifacts:** If a run fails, the Playwright HTML test report and run traces are uploaded and stored for **14 days**.
+
+#### Visual Baseline Platform Strategy
+
+Because layout, font-anti-aliasing, and visual scrollbars differ between operating systems, local developers and CI runners require specific baseline baselines:
+
+- **Windows baselines** are saved with the suffix `-win32.png` and are preserved for local Windows execution.
+- **Linux/Ubuntu baselines** are saved with the suffix `-linux.png`.
+- **Automated Baseline Updates:** To update the Linux baselines without needing local Linux setups, execute the GitHub Actions workflow manually via the **Actions** tab on GitHub, toggle the `workflow_dispatch` parameter `Regenerate and commit visual snapshot baselines` to `true`, and trigger the run. This automatically updates, commits, and pushes the Linux snapshots directly to `main`.
+
+#### Known Expected Backend Defect
+
+The Trajectory backend contains an authentication exception defect:
+
+- **Defect:** Submitting invalid login credentials returns `500 Internal Server Error` instead of the standard `401 Unauthorized`.
+- **CI/CD Mitigation:** Rather than weakening the strict validation (`expect(response.status()).toBe(401)`), this test is annotated with Playwright's native `test.fail(true, 'Trajectory backend defect')` in `tests/api/auth.spec.ts`. This narrowly isolates the failure, allowing the test to run as an "expected failure" (marking the pipeline green). If the backend is fixed, the test will unexpectedly pass, alerting developers to remove the annotation.
 
 ### Test Categorization
 
